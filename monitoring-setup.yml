@@ -1,0 +1,134 @@
+---
+- name: Setup Monitoring Stack
+  hosts: monitoring
+  become: true
+  vars:
+    prometheus_dir: /opt/prometheus
+    prometheus_config_dir: /etc/prometheus
+    prometheus_data_dir: /var/lib/prometheus
+    console_dir: /opt/redpanda-console
+  tasks:
+    # Common setup
+    - name: Create service user accounts
+      user:
+        name: "{{ item }}"
+        system: yes
+        shell: /sbin/nologin
+      loop:
+        - prometheus
+        - grafana
+        - redpanda-console
+
+    - name: Install dependencies
+      apt:
+        name:
+          - adduser
+          - libfontconfig1
+          - musl
+        state: present
+        update_cache: yes
+
+    # Prometheus Setup
+    - name: Download and extract Prometheus
+      unarchive:
+        src: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-{{ arch }}.tar.gz"
+        dest: /tmp
+        remote_src: yes
+        creates: "/tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}"
+
+    - name: Create Prometheus directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: prometheus
+        group: prometheus
+        mode: '0755'
+      loop:
+        - "{{ prometheus_dir }}"
+        - "{{ prometheus_config_dir }}"
+        - "{{ prometheus_data_dir }}"
+
+    - name: Copy Prometheus binary
+      copy:
+        src: "/tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/prometheus"
+        dest: "{{ prometheus_dir }}/prometheus"
+        remote_src: yes
+        mode: '0755'
+        owner: prometheus
+        group: prometheus
+
+    - name: Configure Prometheus
+      template:
+        src: prometheus.yml.j2
+        dest: "{{ prometheus_config_dir }}/prometheus.yml"
+        owner: prometheus
+        group: prometheus
+        mode: '0644'
+
+    - name: Create Prometheus systemd service
+      template:
+        src: prometheus.service.j2
+        dest: /etc/systemd/system/prometheus.service
+        mode: '0644'
+
+    # Grafana Setup
+    - name: Download Grafana Enterprise package
+      get_url:
+        url: "https://dl.grafana.com/enterprise/release/grafana-enterprise_{{ grafana_version }}_{{ arch }}.deb"
+        dest: "/tmp/grafana-enterprise_{{ grafana_version }}_{{ arch }}.deb"
+        mode: '0644'
+
+    - name: Install Grafana package
+      apt:
+        deb: "/tmp/grafana-enterprise_{{ grafana_version }}_{{ arch }}.deb"
+        state: present
+
+    - name: Ensure Grafana service directory exists
+      file:
+        path: /var/lib/grafana
+        state: directory
+        owner: grafana
+        group: grafana
+        mode: '0755'
+
+    # RedPanda Console Setup
+    # Create console directory
+    - name: Create console directory
+      file:
+        path: "{{ console_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download RedPanda Console
+      get_url:
+        url: "https://github.com/redpanda-data/console/releases/download/v{{ redpanda_console_version }}/redpanda_console_{{ redpanda_console_version }}_linux_{{ arch }}.tar.gz"
+        dest: "{{ console_dir }}/redpanda-console"
+        mode: '0755'
+        owner: redpanda-console
+        group: redpanda-console
+
+    - name: Create RedPanda Console config
+      template:
+        src: redpanda-console-config.yml.j2
+        dest: "{{ console_dir }}/config.yml"
+        owner: redpanda-console
+        group: redpanda-console
+        mode: '0644'
+
+    - name: Create RedPanda Console systemd service
+      template:
+        src: redpanda-console.service.j2
+        dest: /etc/systemd/system/redpanda-console.service
+        mode: '0644'
+
+    # Start Services
+    - name: Start and enable services
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+        daemon_reload: yes
+      loop:
+        - prometheus
+        - grafana-server
+        - redpanda-console

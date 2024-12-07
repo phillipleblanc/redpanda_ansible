@@ -1,0 +1,27 @@
+all:
+  children:
+    redpanda:
+      hosts:
+        redpanda1:
+          ansible_host: "{{ rp_node1_ip }}"
+          ansible_user: "phillip"
+          node_id: 1
+          kafka_port: 9092
+          rpc_port: 33145
+        redpanda2:
+          ansible_host: "{{ rp_node2_ip }}"
+          ansible_user: "phillip"
+          node_id: 2
+          kafka_port: 9092
+          rpc_port: 33145
+        redpanda3:
+          ansible_host: "{{ rp_node3_ip }}"
+          ansible_user: "phillip"
+          node_id: 3
+          kafka_port: 9092
+          rpc_port: 33145
+    monitoring:
+      hosts:
+        redpanda_monitoring:
+          ansible_host: "{{ monitoring_ip }}"
+          ansible_user: "phillip"

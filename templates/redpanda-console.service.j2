@@ -1,0 +1,13 @@
+[Unit]
+Description=RedPanda Console
+After=network-online.target
+
+[Service]
+User=redpanda-console
+Group=redpanda-console
+Type=simple
+ExecStart={{ console_dir }}/redpanda-console \
+    --config.filepath={{ console_dir }}/config.yml
+
+[Install]
+WantedBy=multi-user.target

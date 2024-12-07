@@ -1,0 +1,48 @@
+---
+- name: Setup RedPanda Cluster
+  hosts: redpanda
+  become: true
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - systemd-container
+        state: present
+        update_cache: yes
+
+    - name: Add RedPanda Repository
+      shell: |
+        curl -1sLf \
+          'https://dl.redpanda.com/nzc4ZYQK3WRGd9sy/redpanda/cfg/setup/bash.deb.sh' \
+          | sudo -E bash
+
+    - name: Install RedPanda
+      apt:
+        name: redpanda
+        state: present
+        update_cache: yes
+
+    - name: Create data directory
+      file:
+        path: "{{ data_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Generate RedPanda configuration
+      template:
+        src: redpanda.yaml.j2
+        dest: /etc/redpanda/redpanda.yaml
+      notify: restart redpanda
+
+    - name: Start RedPanda service
+      systemd:
+        name: redpanda
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart redpanda
+      systemd:
+        name: redpanda
+        state: restarted
