@@ -1,6 +1,6 @@
 rp_version: "latest"
 data_directory: "/var/lib/redpanda/data"
-seed_node: "{{ hostvars['redpanda1'].ansible_host }}:33145"
+seed_node: "{{ redpanda_0_ip }}:33145"
 arch: "arm64"
 prometheus_version: "3.0.1"
 grafana_version: "11.4.0"

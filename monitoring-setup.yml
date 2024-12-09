@@ -100,12 +100,11 @@
         mode: '0755'
 
     - name: Download RedPanda Console
-      get_url:
-        url: "https://github.com/redpanda-data/console/releases/download/v{{ redpanda_console_version }}/redpanda_console_{{ redpanda_console_version }}_linux_{{ arch }}.tar.gz"
-        dest: "{{ console_dir }}/redpanda-console"
-        mode: '0755'
-        owner: redpanda-console
-        group: redpanda-console
+      unarchive:
+        src: "https://github.com/redpanda-data/console/releases/download/v{{ redpanda_console_version }}/redpanda_console_{{ redpanda_console_version }}_linux_{{ arch }}.tar.gz"
+        dest: "{{ console_dir }}"
+        remote_src: yes
+        creates: "{{ console_dir }}/redpanda-console"
 
     - name: Create RedPanda Console config
       template:

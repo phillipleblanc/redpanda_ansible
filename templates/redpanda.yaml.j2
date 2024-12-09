@@ -1,32 +1,29 @@
 redpanda:
-  data_directory: "{{ data_directory }}"
+  data_directory: /var/lib/redpanda/data
+  empty_seed_starts_cluster: false
   node_id: {{ node_id }}
+  developer_mode: true
   seed_servers:
-    {% if node_id != 1 %}
-    - host:
-        address: "{{ seed_node.split(':')[0] }}"
-        port: {{ seed_node.split(':')[1] }}
-    {% endif %}
-  rpc_server:
-    address: "{{ ansible_host }}"
-    port: {{ rpc_port }}
+    - address: {{ redpanda_0_ip }}
+      port: 33145
+    - address: {{ redpanda_1_ip }}
+      port: 33145
+    - address: {{ redpanda_2_ip }}
+      port: 33145
+  rpc_server: 
+    address: {{ node_ip }}
+    port: 33145
   kafka_api:
-    - address: "{{ ansible_host }}"
-      port: {{ kafka_port }}
+    - address: {{ node_ip }}
+      port: 9092
   admin:
-    - address: "{{ ansible_host }}"
+    - address: {{ node_ip }}
       port: 9644
-  developer_mode: false
-  auto_create_topics_enabled: true
-
-rpk:
-  tune_network: true
-  tune_disk_scheduler: true
-  tune_disk_nomerges: true
-  tune_disk_write_cache: true
-  tune_disk_irq: true
-  tune_cpu: true
-  tune_aio_events: true
-  tune_clocksource: true
-  tune_swappiness: true
-  coredump_dir: /var/lib/redpanda/coredump
+  advertised_rpc_api:
+    address: {{ node_ip }}
+    port: 33145
+  advertised_kafka_api:
+    - address: {{ node_ip }}
+      port: 9092
+    - address: {{ external_host }}
+      port: 9092

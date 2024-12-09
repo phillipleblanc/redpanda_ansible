@@ -6,11 +6,7 @@ scrape_configs:
   - job_name: 'redpanda'
     static_configs:
       - targets:
-        {% for host in groups['redpanda'] %}
-        - '{{ hostvars[host].ansible_host }}:9644'
-        {% endfor %}
-
-  - job_name: 'redpanda-console'
-    static_configs:
-      - targets:
-        - 'localhost:8080'
+{% for host in groups['redpanda'] %}
+        - '{{ hostvars[host].node_ip }}:9644'
+{% endfor %}
+    metrics_path: /public_metrics

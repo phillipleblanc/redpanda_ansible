@@ -1,16 +1,8 @@
 kafka:
   brokers:
-    {% for host in groups['redpanda'] %}
-    - {{ hostvars[host].ansible_host }}:{{ hostvars[host].kafka_port }}
-    {% endfor %}
-  schemaRegistry:
-    enabled: true
-    urls:
-      - http://{{ hostvars['redpanda1'].ansible_host }}:8081
+{% for host in groups['redpanda'] %}
+    - {{ hostvars[host].node_ip }}:{{ hostvars[host].kafka_port }}
+{% endfor %}
 
 server:
   listenPort: 8080
-
-prometheus:
-  enabled: true
-  url: http://localhost:9090
