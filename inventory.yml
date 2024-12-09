@@ -9,6 +9,7 @@ all:
           node_id: 1
           kafka_port: 9092
           rpc_port: 33145
+          arch: "arm64"
         redpanda-1@orb:
           ansible_user: "redpanda-1"
           node_ip: "{{ redpanda_1_ip }}"
@@ -16,6 +17,7 @@ all:
           node_id: 2
           kafka_port: 9092
           rpc_port: 33145
+          arch: "arm64"
         redpanda-2@orb:
           ansible_user: "redpanda-2"
           node_ip: "{{ redpanda_2_ip }}"
@@ -23,7 +25,9 @@ all:
           node_id: 3
           kafka_port: 9092
           rpc_port: 33145
+          arch: "arm64"
     monitoring:
       hosts:
         redpanda-monitoring@orb:
           ansible_user: "redpanda-monitoring"
+          arch: "arm64"

@@ -1,5 +1,5 @@
 redpanda:
-  data_directory: /var/lib/redpanda/data
+  data_directory: {{ data_directory }}
   empty_seed_starts_cluster: false
   node_id: {{ node_id }}
   developer_mode: true
